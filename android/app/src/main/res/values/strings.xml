@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">SuperEssence Sheets</string>
+    <string name="title_activity_main">SuperEssence Sheets</string>
+    <string name="package_name">com.superessence.sheets</string>
+    <string name="custom_url_scheme">com.superessence.sheets</string>
+</resources>

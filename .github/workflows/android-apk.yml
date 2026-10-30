@@ -1,0 +1,77 @@
+name: Build APK Android
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      VERSION_CODE: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Tests du moteur de formules
+        run: npm test
+
+      - name: Synchroniser l'application web dans Android
+        run: npx cap sync android
+
+      - name: Clé de signature (optionnelle, secrets GitHub)
+        if: ${{ env.KEYSTORE_B64 != '' }}
+        env:
+          KEYSTORE_B64: ${{ secrets.SE_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          echo "SE_KEYSTORE_FILE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+          echo "SE_KEYSTORE_PASSWORD=${{ secrets.SE_KEYSTORE_PASSWORD }}" >> "$GITHUB_ENV"
+          echo "SE_KEY_ALIAS=${{ secrets.SE_KEY_ALIAS }}" >> "$GITHUB_ENV"
+          echo "SE_KEY_PASSWORD=${{ secrets.SE_KEY_PASSWORD }}" >> "$GITHUB_ENV"
+
+      - name: Compiler l'APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+          mkdir -p ../dist
+          cp app/build/outputs/apk/release/app-release.apk ../dist/SuperEssence-Sheets-v1.0.${{ github.run_number }}.apk
+
+      - name: Publier l'APK (artefact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: SuperEssence-Sheets-APK
+          path: dist/*.apk
+
+      - name: Publier une release téléchargeable
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: SuperEssence Sheets v1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          files: dist/*.apk
+          body: |
+            📱 **SuperEssence Sheets** — le tableur des coachs sportifs, par SuperEssence Studio.
+
+            Installation : téléchargez le fichier `.apk` ci-dessous depuis votre téléphone Android, ouvrez-le et autorisez l'installation depuis cette source si Android le demande.

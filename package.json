@@ -1,0 +1,26 @@
+{
+  "name": "superessence-sheets",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SuperEssence Sheets — le tableur des coachs sportifs (SuperEssence Studio)",
+  "author": "SuperEssence Studio",
+  "license": "UNLICENSED",
+  "scripts": {
+    "serve": "python3 -m http.server 8080 --directory www",
+    "icons": "python3 tools/make_icons.py",
+    "sync": "cap sync android",
+    "apk": "cap sync android && cd android && ./gradlew assembleDebug",
+    "test": "node tests/formula.test.js"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/app": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/filesystem": "^8.0.0",
+    "@capacitor/share": "^8.0.0",
+    "@capacitor/status-bar": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0"
+  }
+}
